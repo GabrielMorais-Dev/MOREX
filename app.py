@@ -3,7 +3,6 @@ from groq import Groq
 import os
 
 from dotenv import load_dotenv
-import os
 
 app = Flask(__name__)
 
@@ -17,13 +16,13 @@ client = Groq(
 # PÁGINAS
 # ─────────────────────────────
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-@app.route("/axiom")
+@app.route('/axiom')
 def axiom():
-    return render_template("axiom.html")
+    return render_template('axiom.html')
 
 # ─────────────────────────────
 # PROMPT AXIOM
@@ -93,6 +92,5 @@ def api_axiom():
     })
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

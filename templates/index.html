@@ -751,6 +751,32 @@ footer {
     padding: 3rem 1.1rem 2rem;
   }
 }
+
+/* ── FIX MOBILE: garante que vídeos sejam visíveis e iniciem ── */
+@media (max-width: 768px) {
+  .video-wrap video {
+    /* força hardware acceleration e visibilidade no iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* No mobile, mostra os cards imediatamente sem depender do scrub do GSAP */
+  .video-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .video-card .video-card-meta {
+    opacity: 1 !important;
+  }
+
+  .videos-label,
+  .videos-heading {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1068,40 +1094,65 @@ gsap.timeline({
 .to('.article-body',   { opacity: 1, y: 0, ease: 'none', duration: 1.5 }, 1.4);
 
 // ── GRID DE VÍDEOS ──
-// Os cards agora entram assim que a seção fica visível,
-// sem precisar rolar a tela inteira. Scrub menor + end curto
-// = animação completa em poucos pixels de scroll.
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-gsap.set('.videos-label',   { opacity: 0, y: 16 });
-gsap.set('.videos-heading',  { opacity: 0, y: 20 });
-gsap.set('.video-card',      { opacity: 0, y: 40 });
-gsap.set('.video-card video', { clipPath: 'inset(100% 0% 0% 0%)' });
-gsap.set('.video-card .video-card-meta', { opacity: 0 });
+if (!isMobile) {
+  // Desktop: mantém animação GSAP original com scrub
+  gsap.set('.videos-label',   { opacity: 0, y: 16 });
+  gsap.set('.videos-heading',  { opacity: 0, y: 20 });
+  gsap.set('.video-card',      { opacity: 0, y: 40 });
+  gsap.set('.video-card .video-card-meta', { opacity: 0 });
 
-gsap.timeline({
-  scrollTrigger: {
-    trigger: '.videos-section',
-    start: 'top 70%',   // dispara quando a seção entra 70% da viewport
-    end: '+=320',       // conclui em apenas 320px de scroll (era 1100px)
-    scrub: 1.2          // menos inércia = resposta mais rápida (era 2.8)
+  gsap.timeline({
+    scrollTrigger: {
+      trigger: '.videos-section',
+      start: 'top 70%',
+      end: '+=320',
+      scrub: 1.2
+    }
+  })
+  .to('.videos-label',   { opacity: 1, y: 0, ease: 'none', duration: 0.8 }, 0)
+  .to('.videos-heading',  { opacity: 1, y: 0, ease: 'none', duration: 0.9 }, 0.2)
+  .to('.video-card:nth-child(1)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 0.7)
+  .to('.video-card:nth-child(1) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.2)
+  .to('.video-card:nth-child(2)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.0)
+  .to('.video-card:nth-child(2) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.5)
+  .to('.video-card:nth-child(3)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.3)
+  .to('.video-card:nth-child(3) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.8);
+}
+
+// ── FIX MOBILE: IntersectionObserver garante play() no iOS/Android ──
+// Necessário porque iOS bloqueia autoplay quando opacity:0 via JS
+// e Android Chrome exige interseção visível para iniciar vídeo
+(function () {
+  const videos = document.querySelectorAll('.video-wrap video');
+
+  // Tenta dar play imediato (funciona em Android e alguns iOS)
+  videos.forEach(v => {
+    v.muted = true;
+    v.playsInline = true;
+    const p = v.play();
+    if (p !== undefined) p.catch(() => {});
+  });
+
+  // IntersectionObserver: dispara play quando o vídeo entra na viewport
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const vid = entry.target;
+        if (entry.isIntersecting) {
+          vid.muted = true;
+          const p = vid.play();
+          if (p !== undefined) p.catch(() => {});
+        } else {
+          vid.pause();
+        }
+      });
+    }, { threshold: 0.25 });
+
+    videos.forEach(v => obs.observe(v));
   }
-})
-// label e heading entram quase juntos
-.to('.videos-label',   { opacity: 1, y: 0, ease: 'none', duration: 0.8 }, 0)
-.to('.videos-heading',  { opacity: 1, y: 0, ease: 'none', duration: 0.9 }, 0.2)
-
-// os 3 cards entram com uma sobreposição mínima entre si
-.to('.video-card:nth-child(1)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 0.7)
-.to('.video-card:nth-child(1) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 0.7)
-.to('.video-card:nth-child(1) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.2)
-
-.to('.video-card:nth-child(2)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.0)
-.to('.video-card:nth-child(2) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 1.0)
-.to('.video-card:nth-child(2) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.5)
-
-.to('.video-card:nth-child(3)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.3)
-.to('.video-card:nth-child(3) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 1.3)
-.to('.video-card:nth-child(3) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.8);
+})();
 
 // ── CTA AXIOM ──
 gsap.set('.axiom-cta-label', { opacity: 0, y: 30 });
@@ -1125,7 +1176,6 @@ gsap.timeline({
   opacity: 1, y: 0, duration: 0.9, ease: 'power3.out'
 }, '-=0.5');
 
-// pulso de atenção no botão após entrada
 ScrollTrigger.create({
   trigger: '.axiom-cta',
   start: 'top 75%',

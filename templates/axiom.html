@@ -603,16 +603,24 @@ const pauseIcon     = document.getElementById('pauseIcon');
 const ICON_PAUSE = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
 const ICON_PLAY  = '<polygon points="5,3 19,12 5,21"/>';
 
-// troca de vídeo compatível com iOS (usa <source> + .load())
+// ── troca de vídeo compatível com iOS ──
+// iOS exige: trocar <source src>, chamar .load(), depois .play()
+// NUNCA usar video.src = "..." diretamente — quebra no Safari/iOS
+const robotVideo = document.getElementById('robot-face');
+const robotSource = robotVideo ? robotVideo.querySelector('source') : null;
+
 function setVideo(srcMp4) {
-  const v = document.getElementById('robot-face');
-  if (!v) return;
-  const source = v.querySelector('source');
-  if (source) source.src = srcMp4;
-  else v.innerHTML = `<source src="${srcMp4}" type="video/mp4">`;
-  v.load();
-  v.play().catch(() => {});
+  if (!robotVideo || !robotSource) return;
+  if (robotSource.src.endsWith(srcMp4)) return; // já está, não recarrega
+  robotSource.src = srcMp4;
+  robotVideo.load();
+  robotVideo.play().catch(() => {});
 }
+
+// garante autoplay assim que o usuário interage (desbloqueio iOS)
+document.addEventListener('touchstart', () => {
+  if (robotVideo && robotVideo.paused) robotVideo.play().catch(() => {});
+}, { once: true });
 
 speedSlider.addEventListener('input', () => {
   speechRate = parseFloat(speedSlider.value);
@@ -621,7 +629,6 @@ speedSlider.addEventListener('input', () => {
 
 pauseBtn.addEventListener('click', () => {
   if (!isSpeaking) return;
-  const robotVideo = document.getElementById('robot-face');
   if (isPaused) {
     window.speechSynthesis.resume();
     isPaused = false;
@@ -630,7 +637,7 @@ pauseBtn.addEventListener('click', () => {
     pauseIcon.innerHTML = ICON_PAUSE;
     setState('speaking');
     setWave(true);
-    if (robotVideo) { setVideo('/static/videos/robo-fala.mp4'); }
+    setVideo('/static/videos/robo-fala.mp4');
   } else {
     window.speechSynthesis.pause();
     isPaused = true;
@@ -639,7 +646,7 @@ pauseBtn.addEventListener('click', () => {
     pauseIcon.innerHTML = ICON_PLAY;
     setState('idle');
     setWave(false);
-    if (robotVideo) { setVideo('/static/videos/robo-escuta.mp4'); }
+    setVideo('/static/videos/robo-escuta.mp4');
   }
 });
 
@@ -694,8 +701,6 @@ function speak(text) {
                 || voices.find(v => v.lang.startsWith('pt'))
                 || voices[0];
   if (ptVoice) utter.voice = ptVoice;
-
-  const robotVideo = document.getElementById('robot-face');
 
   utter.onend = utter.onerror = () => {
     setState('idle');
