@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AXIOM</title>
+<link rel="icon" href="/static/logo.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="/static/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -511,17 +513,18 @@ body.listening .state-label { color: #6ec9a9;     opacity: 1; }
 </div>
 
 <div class="video-wrap">
-  <video id="robot-face" autoplay muted loop playsinline webkit-playsinline preload="auto">
-    <source id="robot-source" src="/static/videos/robo-escuta.mp4" type="video/mp4">
+  <!-- video A: escuta (ativo por padrão) -->
+  <video id="vid-escuta" autoplay muted loop playsinline webkit-playsinline preload="auto"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity 0.4s ease;">
+    <source src="/static/videos/robo-escuta.mp4" type="video/mp4">
+  </video>
+  <!-- video B: fala (pré-carregado, invisível) -->
+  <video id="vid-fala" muted loop playsinline webkit-playsinline preload="auto"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.4s ease;">
+    <source src="/static/videos/robo-fala.mp4" type="video/mp4">
   </video>
   <span class="state-label" id="state-label">Pronto</span>
 </div>
-
-<!-- Pré-carrega robo-fala.mp4 para iOS não travar na primeira troca -->
-<video id="preload-fala" muted playsinline webkit-playsinline preload="auto"
-  style="display:none;width:0;height:0;position:absolute;pointer-events:none;" aria-hidden="true">
-  <source src="/static/videos/robo-fala.mp4" type="video/mp4">
-</video>
 
 <div class="messages-wrap">
   <div class="messages" id="messages">
@@ -609,44 +612,50 @@ const pauseIcon     = document.getElementById('pauseIcon');
 const ICON_PAUSE = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
 const ICON_PLAY  = '<polygon points="5,3 19,12 5,21"/>';
 
-// ── troca de vídeo compatível com iOS ──
-// iOS resolve src para URL absoluta, então endsWith('/static/...') falha.
-// Solução: comparar só o pathname da URL atual.
-const robotVideo  = document.getElementById('robot-face');
-const robotSource = document.getElementById('robot-source');
+// ── dois vídeos sobrepostos com crossfade — sem .load() durante a troca ──
+// Chamar .load() no iOS descarta o frame atual e deixa tela preta.
+// Solução: dois <video> sempre carregados; alternar opacidade entre eles.
+var vidEscuta = document.getElementById('vid-escuta');
+var vidFala   = document.getElementById('vid-fala');
+var currentVideo = 'escuta'; // rastreia qual está ativo
+
+// Referência legada usada em outras partes do código
+var robotVideo = vidEscuta;
+
+function playVid(v) {
+  v.muted = true;
+  var p = v.play();
+  if (p && p.catch) p.catch(function(){});
+}
 
 function setVideo(srcMp4) {
-  if (!robotVideo || !robotSource) return;
-  // Pega só o path da src atual
-  let currentPath = '';
-  try { currentPath = new URL(robotSource.src).pathname; } catch(e) { currentPath = robotSource.src; }
-  if (currentPath === srcMp4) return; // já está rodando, não recarrega
+  var isFala = srcMp4.indexOf('robo-fala') !== -1;
 
-  robotSource.src = srcMp4;
-  robotVideo.load();
-  robotVideo.muted = true;
-
-  // iOS às vezes precisa de um pequeno delay após .load() antes de .play()
-  var playPromise = robotVideo.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(function() {
-      // Segunda tentativa com delay — fallback para iOS Safari
-      setTimeout(function() {
-        robotVideo.muted = true;
-        robotVideo.play().catch(function(){});
-      }, 150);
-    });
+  if (isFala && currentVideo !== 'fala') {
+    currentVideo = 'fala';
+    playVid(vidFala);
+    vidFala.style.opacity   = '1';
+    vidEscuta.style.opacity = '0';
+    setTimeout(function() { vidEscuta.pause(); }, 450);
+  } else if (!isFala && currentVideo !== 'escuta') {
+    currentVideo = 'escuta';
+    playVid(vidEscuta);
+    vidEscuta.style.opacity = '1';
+    vidFala.style.opacity   = '0';
+    setTimeout(function() { vidFala.pause(); }, 450);
   }
 }
 
-// garante autoplay assim que o usuário interage (desbloqueio iOS)
+// Pré-inicia os dois vídeos no primeiro toque (desbloqueio iOS)
 document.addEventListener('touchstart', function onFirstTouch() {
-  if (robotVideo) {
-    robotVideo.muted = true;
-    robotVideo.play().catch(function(){});
-  }
+  playVid(vidEscuta);
+  playVid(vidFala);
+  vidFala.pause(); // mantém fala pausado até ser chamado
   document.removeEventListener('touchstart', onFirstTouch);
 }, { once: true });
+
+// Desktop: inicia escuta logo
+playVid(vidEscuta);
 
 speedSlider.addEventListener('input', () => {
   speechRate = parseFloat(speedSlider.value);
