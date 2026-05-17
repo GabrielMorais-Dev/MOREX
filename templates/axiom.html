@@ -91,8 +91,8 @@ body {
 /* ── VÍDEO ── */
 .video-wrap {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: clamp(120px, 30vmin, 320px);
+  height: clamp(120px, 30vmin, 320px);
   flex-shrink: 0;
   margin-top: 0.8rem;
 }
@@ -498,6 +498,126 @@ body.listening .state-label { color: #6ec9a9;     opacity: 1; }
   opacity: 0;
   animation: msgIn 0.9s ease 0.7s forwards;
 }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVO — abordagem fluida + breakpoints
+   O layout usa dvh (dynamic viewport height) para
+   compensar a barra do browser no iOS/Android.
+═══════════════════════════════════════════════ */
+
+/* Corrige overflow em qualquer celular */
+html {
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+  padding: 0 clamp(0.6rem, 4vw, 2rem);
+}
+
+/* top-bar fluido */
+.top-bar {
+  width: 100%;
+  max-width: min(720px, 100%);
+  padding-top: clamp(0.7rem, 3vh, 2rem);
+}
+
+.axiom-name {
+  font-size: clamp(0.65rem, 2.5vw, 1rem);
+  letter-spacing: clamp(0.28em, 1vw, 0.6em);
+}
+
+/* messages fluidas */
+.messages-wrap {
+  max-width: min(660px, 100%);
+}
+
+.messages {
+  padding: clamp(0.6rem, 2vh, 2rem) clamp(0.3rem, 2vw, 1.5rem) 0.3rem;
+  gap: clamp(0.6rem, 1.5vh, 1.1rem);
+}
+
+.msg-text {
+  font-size: clamp(0.84rem, 2.4vw, 1rem);
+  line-height: clamp(1.55, 0.1vw + 1.6, 1.75);
+}
+
+/* input fluido */
+.input-section {
+  max-width: min(660px, 100%);
+  padding-bottom: clamp(0.8rem, 3vh, 2rem);
+  padding-top: clamp(0.2rem, 1vh, 0.4rem);
+}
+
+.input-box {
+  padding: clamp(0.4rem, 1vh, 0.55rem) clamp(0.4rem, 1vw, 0.55rem) clamp(0.4rem, 1vh, 0.55rem) clamp(0.75rem, 2vw, 1.3rem);
+  border-radius: clamp(14px, 3vw, 20px);
+}
+
+.text-input {
+  font-size: clamp(0.88rem, 2.2vw, 0.98rem);
+}
+
+/* typing e wave */
+.typing-indicator,
+.wave-bars {
+  max-width: min(660px, 100%);
+  padding-left: clamp(0.3rem, 2vw, 1.5rem);
+}
+
+/* ── Esconde hint em telas pequenas ── */
+@media (max-width: 600px) {
+  .input-hint { display: none; }
+}
+
+/* ── Speed label some em telas estreitas ── */
+@media (max-width: 400px) {
+  .speed-label { display: none; }
+  .voice-controls { gap: 0.6rem; padding-left: 0.8rem; }
+}
+
+/* ── Botões menores em telas pequenas ── */
+@media (max-width: 375px) {
+  .btn { width: 30px; height: 30px; }
+  .btn-pause { width: 24px; height: 24px; }
+  .btn-home { font-size: 0.44rem; }
+  .btn-home svg { width: 7px; height: 7px; }
+  .msg-role { font-size: 0.38rem; }
+}
+
+@media (max-width: 320px) {
+  .btn { width: 27px; height: 27px; }
+  .btn-pause { width: 22px; height: 22px; }
+}
+
+/* ── Landscape: encolhe vídeo e top-bar para dar espaço ao chat ── */
+@media (max-height: 650px) {
+  .video-wrap {
+    width: clamp(80px, 20vmin, 160px) !important;
+    height: clamp(80px, 20vmin, 160px) !important;
+    margin-top: 0.1rem;
+  }
+  .top-bar { padding-top: 0.5rem; }
+  .messages { gap: 0.5rem; }
+  .input-section { padding-bottom: 0.6rem; }
+}
+
+@media (max-height: 500px) {
+  .video-wrap { display: none; } /* landscape muito baixo: esconde vídeo */
+  .top-bar { padding-top: 0.4rem; }
+}
+
+/* ── iOS Safari: fix da barra inferior ── */
+@supports (-webkit-touch-callout: none) {
+  .input-section {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px) + 0.8rem, 1.2rem);
+  }
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
 </style>
 </head>
 <body>
@@ -877,6 +997,37 @@ gsap.fromTo('#btnHome',
   { opacity: 0, x: -10 },
   { opacity: 1, x: 0, duration: 1.1, ease: 'power3.out', delay: 0.6 }
 );
+
+// ── FIX TECLADO MOBILE ──
+// Quando o teclado virtual abre no iOS/Android, o viewport encolhe.
+// Isso garante que o input fique sempre visível.
+(function () {
+  var inputSection = document.querySelector('.input-section');
+  var messagesWrap = document.querySelector('.messages-wrap');
+
+  function onResize() {
+    // visualViewport é mais preciso que window.innerHeight no mobile
+    var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--real-vh', vh + 'px');
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onResize);
+    window.visualViewport.addEventListener('scroll', onResize);
+  }
+  window.addEventListener('resize', onResize);
+  onResize();
+
+  // Foca no input: faz scroll para garantir visibilidade no Android
+  var textInput = document.getElementById('textInput');
+  if (textInput) {
+    textInput.addEventListener('focus', function () {
+      setTimeout(function () {
+        textInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 320);
+    });
+  }
+})();
 </script>
 </body>
 </html>
