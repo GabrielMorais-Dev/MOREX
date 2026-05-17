@@ -521,7 +521,7 @@ body.listening .state-label { color: #6ec9a9;     opacity: 1; }
   <!-- video B: fala (pré-carregado, invisível) -->
   <video id="vid-fala" muted loop playsinline webkit-playsinline preload="auto"
     style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.4s ease;">
-    <source src="/static/videos/robo-fala.mp4" type="video/mp4">
+    <source src="/static/videos/robo-fala.webm" type="video/mp4">
   </video>
   <span class="state-label" id="state-label">Pronto</span>
 </div>
@@ -672,7 +672,7 @@ pauseBtn.addEventListener('click', () => {
     pauseIcon.innerHTML = ICON_PAUSE;
     setState('speaking');
     setWave(true);
-    setVideo('/static/videos/robo-fala.mp4');
+    setVideo('/static/videos/robo-fala.webm');
   } else {
     window.speechSynthesis.pause();
     isPaused = true;
@@ -746,7 +746,7 @@ function speak(text) {
     setVideo('/static/videos/robo-escuta.mp4');
   };
 
-  setVideo('/static/videos/robo-fala.mp4');
+  setVideo('/static/videos/robo-fala.webm');
   setState('speaking');
   setWave(true);
   voiceControls.classList.add('visible');
