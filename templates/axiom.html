@@ -603,6 +603,17 @@ const pauseIcon     = document.getElementById('pauseIcon');
 const ICON_PAUSE = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
 const ICON_PLAY  = '<polygon points="5,3 19,12 5,21"/>';
 
+// troca de vídeo compatível com iOS (usa <source> + .load())
+function setVideo(srcMp4) {
+  const v = document.getElementById('robot-face');
+  if (!v) return;
+  const source = v.querySelector('source');
+  if (source) source.src = srcMp4;
+  else v.innerHTML = `<source src="${srcMp4}" type="video/mp4">`;
+  v.load();
+  v.play().catch(() => {});
+}
+
 speedSlider.addEventListener('input', () => {
   speechRate = parseFloat(speedSlider.value);
   speedVal.textContent = speechRate.toFixed(1) + '\u00d7';
@@ -619,7 +630,7 @@ pauseBtn.addEventListener('click', () => {
     pauseIcon.innerHTML = ICON_PAUSE;
     setState('speaking');
     setWave(true);
-    if (robotVideo) { robotVideo.src = '/static/videos/robo-fala.webm'; robotVideo.play(); }
+    if (robotVideo) { setVideo('/static/videos/robo-fala.mp4'); }
   } else {
     window.speechSynthesis.pause();
     isPaused = true;
@@ -628,7 +639,7 @@ pauseBtn.addEventListener('click', () => {
     pauseIcon.innerHTML = ICON_PLAY;
     setState('idle');
     setWave(false);
-    if (robotVideo) { robotVideo.src = '/static/videos/robo-escuta.mp4'; robotVideo.play(); }
+    if (robotVideo) { setVideo('/static/videos/robo-escuta.mp4'); }
   }
 });
 
@@ -692,16 +703,10 @@ function speak(text) {
     isSpeaking = false;
     isPaused = false;
     voiceControls.classList.remove('visible');
-    if (robotVideo) {
-      robotVideo.src = '/static/videos/robo-escuta.mp4';
-      robotVideo.play();
-    }
+    setVideo('/static/videos/robo-escuta.mp4');
   };
 
-  if (robotVideo) {
-    robotVideo.src = '/static/videos/robo-fala.webm';
-    robotVideo.play();
-  }
+  setVideo('/static/videos/robo-fala.mp4');
   setState('speaking');
   setWave(true);
   voiceControls.classList.add('visible');
