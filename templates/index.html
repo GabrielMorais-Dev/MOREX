@@ -608,10 +608,60 @@ footer {
 }
 
 /* ── HAMBÚRGUER ── */
-.nav-hamburger { display: none; }
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+  background: none;
+  border: none;
+  z-index: 1001;
+}
+
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: #f0ece4;
+  transition: transform 0.35s ease, opacity 0.25s ease;
+  transform-origin: center;
+}
+
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
 /* ── MENU MOBILE OVERLAY ── */
-.mobile-menu { display: none; }
+.mobile-menu {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #020e18;
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.8rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-menu.visible {
+  display: flex;
+}
+
+.mobile-menu a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.4rem, 8vw, 2.2rem);
+  letter-spacing: 0.25em;
+  color: #f0ece4;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(30px);
+  text-transform: uppercase;
+}
 
 /* ── MEDIA QUERIES ── */
 @media (max-width: 768px) {
@@ -619,20 +669,14 @@ footer {
   /* Nav */
   .top-nav {
     padding: 1.2rem 1.4rem;
-    flex-wrap: wrap;
-    gap: 0.8rem;
   }
 
   .nav-links {
-    display: flex;
-    gap: 1.4rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    display: none; /* esconde no mobile — uso hamburger */
   }
 
-  .nav-links a {
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
+  .nav-hamburger {
+    display: flex;
   }
 
   /* Hero */
@@ -784,6 +828,13 @@ footer {
 <!-- Barra de progresso de scroll -->
 <div class="nav-scroll-line" id="scroll-line"></div>
 
+<!-- Menu overlay mobile -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="/axiom" id="mm-link-1">AXIOM.IA</a>
+  <a href="#" data-target="perspectiva-section" id="mm-link-2">Perspectiva</a>
+  <a href="#" data-target="aplicacoes-section" id="mm-link-3">Aplicações</a>
+</div>
+
 <nav class="top-nav">
   <div class="nav-logo">MOREX</div>
   <div class="nav-links">
@@ -791,14 +842,16 @@ footer {
     <a href="#" data-target="perspectiva-section">Perspectiva</a>
     <a href="#" data-target="aplicacoes-section">Aplicações</a>
   </div>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- HERO -->
 <div id="scroll-driver">
   <div id="sticky-wrap">
-    <video id="hero-video" muted playsinline webkit-playsinline autoplay loop preload="auto">
+    <video id="hero-video" muted playsinline webkit-playsinline preload="metadata">
       <source src="/static/videos/robo.mp4" type="video/mp4">
-      <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
     </video>
     <div class="vignette"></div>
     <div class="hero-center">
@@ -1005,40 +1058,85 @@ document.querySelectorAll('a[data-target]').forEach(link => {
 gsap.to('.top-nav', { opacity: 1, duration: 1.8, ease: 'power3.out', delay: 0.4 });
 gsap.from('.nav-links a', { y: -20, opacity: 0, stagger: 0.12, duration: 1.2, ease: 'power3.out', delay: 0.8 });
 
+// ── HAMBURGER MENU ──
+(function () {
+  var btn  = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('mobile-menu');
+  var links = menu ? menu.querySelectorAll('a') : [];
+  var isOpen = false;
+  var tl = null;
+
+  if (!btn || !menu) return;
+
+  function openMenu() {
+    isOpen = true;
+    btn.classList.add('open');
+    menu.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    if (tl) tl.kill();
+    tl = gsap.timeline();
+    tl.to(menu, { opacity: 1, duration: 0.35, ease: 'power2.out', pointerEvents: 'all' });
+    tl.to(links, { opacity: 1, y: 0, stagger: 0.1, duration: 0.55, ease: 'power3.out' }, '-=0.1');
+  }
+
+  function closeMenu() {
+    isOpen = false;
+    btn.classList.remove('open');
+    document.body.style.overflow = '';
+
+    if (tl) tl.kill();
+    tl = gsap.timeline({ onComplete: function() { menu.classList.remove('visible'); } });
+    tl.to(links, { opacity: 0, y: 20, stagger: 0.05, duration: 0.3, ease: 'power2.in' });
+    tl.to(menu, { opacity: 0, duration: 0.25, ease: 'power2.in', pointerEvents: 'none' }, '-=0.1');
+  }
+
+  btn.addEventListener('click', function() { isOpen ? closeMenu() : openMenu(); });
+
+  // Links do menu: fecha ao clicar
+  links.forEach(function(link) {
+    link.addEventListener('click', function() {
+      closeMenu();
+      // Scroll suave para seção se tiver data-target
+      var target = link.getAttribute('data-target');
+      if (target) {
+        setTimeout(function() {
+          var el = document.getElementById(target);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+      }
+    });
+  });
+})();
+
 // ── HERO ──
 (function () {
   const video = document.getElementById('hero-video');
   let inited = false;
-  const isMobileHero = window.matchMedia('(max-width: 768px)').matches;
-
-  // iOS Safari bloqueia scrub via currentTime sem interação prévia.
-  // No mobile: autoplay normal, sem ScrollTrigger de currentTime.
-  if (isMobileHero) {
+  // iOS Safari exige que o vídeo seja "desbloqueado" por um gesto antes de
+  // aceitar currentTime via JS. Estratégia: no primeiro toque, damos .play()
+  // imediato e pausamos logo em seguida — isso registra o vídeo como
+  // "user-initiated" e libera o controle de currentTime pelo ScrollTrigger.
+  var iosUnlocked = false;
+  document.addEventListener('touchstart', function unlockVideo() {
+    if (iosUnlocked) return;
+    iosUnlocked = true;
     video.muted = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    video.setAttribute('webkit-playsinline', '');
-    video.setAttribute('autoplay', '');
-    video.loop = true;
-    video.classList.add('loaded');
-    video.play().catch(function(){});
-
-    // Tenta de novo no primeiro toque (desbloqueio iOS)
-    document.addEventListener('touchstart', function onT() {
-      video.play().catch(function(){});
-      document.removeEventListener('touchstart', onT);
-    }, { once: true });
-
-    // Animações de entrada do hero no mobile sem scrub
-    gsap.to('.hero-center h1, .hero-center p', {
-      opacity: 1, y: 0, stagger: 0.2, duration: 1.2, ease: 'power2.out', delay: 0.6
-    });
-    return;
-  }
+    var p = video.play();
+    if (p && p.then) {
+      p.then(function() { video.pause(); video.currentTime = 0; }).catch(function(){});
+    } else {
+      video.pause(); video.currentTime = 0;
+    }
+    document.removeEventListener('touchstart', unlockVideo);
+  }, { passive: true });
 
   function initScroll() {
     if (inited) return;
     inited = true;
+    // Garante que o vídeo NÃO está tocando — apenas currentTime é controlado pelo scroll
+    video.pause();
+    video.currentTime = 0;
     video.classList.add('loaded');
     const dur = video.duration || 10;
 
@@ -1047,7 +1145,11 @@ gsap.from('.nav-links a', { y: -20, opacity: 0, stagger: 0.12, duration: 1.2, ea
       start: 'top top',
       end: 'bottom bottom',
       scrub: 1.2,
-      onUpdate(self) { video.currentTime = self.progress * dur; }
+      onUpdate(self) {
+        video.currentTime = self.progress * dur;
+        // Mantém sempre pausado — o efeito de "rodar" vem só do currentTime
+        if (!video.paused) video.pause();
+      }
     });
 
     const pctStartMenu   = (0.5 / dur) * 100;
