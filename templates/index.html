@@ -796,7 +796,7 @@ footer {
 <!-- HERO -->
 <div id="scroll-driver">
   <div id="sticky-wrap">
-    <video id="hero-video" muted playsinline preload="auto">
+    <video id="hero-video" muted playsinline webkit-playsinline autoplay loop preload="auto">
       <source src="/static/videos/robo.mp4" type="video/mp4">
       <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
     </video>
@@ -1009,6 +1009,32 @@ gsap.from('.nav-links a', { y: -20, opacity: 0, stagger: 0.12, duration: 1.2, ea
 (function () {
   const video = document.getElementById('hero-video');
   let inited = false;
+  const isMobileHero = window.matchMedia('(max-width: 768px)').matches;
+
+  // iOS Safari bloqueia scrub via currentTime sem interação prévia.
+  // No mobile: autoplay normal, sem ScrollTrigger de currentTime.
+  if (isMobileHero) {
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.loop = true;
+    video.classList.add('loaded');
+    video.play().catch(function(){});
+
+    // Tenta de novo no primeiro toque (desbloqueio iOS)
+    document.addEventListener('touchstart', function onT() {
+      video.play().catch(function(){});
+      document.removeEventListener('touchstart', onT);
+    }, { once: true });
+
+    // Animações de entrada do hero no mobile sem scrub
+    gsap.to('.hero-center h1, .hero-center p', {
+      opacity: 1, y: 0, stagger: 0.2, duration: 1.2, ease: 'power2.out', delay: 0.6
+    });
+    return;
+  }
 
   function initScroll() {
     if (inited) return;

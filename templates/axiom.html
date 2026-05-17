@@ -517,6 +517,12 @@ body.listening .state-label { color: #6ec9a9;     opacity: 1; }
   <span class="state-label" id="state-label">Pronto</span>
 </div>
 
+<!-- Pré-carrega robo-fala.mp4 para iOS não travar na primeira troca -->
+<video id="preload-fala" muted playsinline webkit-playsinline preload="auto"
+  style="display:none;width:0;height:0;position:absolute;pointer-events:none;" aria-hidden="true">
+  <source src="/static/videos/robo-fala.mp4" type="video/mp4">
+</video>
+
 <div class="messages-wrap">
   <div class="messages" id="messages">
     <div class="msg axiom intro">
@@ -611,14 +617,26 @@ const robotSource = document.getElementById('robot-source');
 
 function setVideo(srcMp4) {
   if (!robotVideo || !robotSource) return;
-  // Pega só o path da src atual (ex: "/static/videos/robo-escuta.mp4")
+  // Pega só o path da src atual
   let currentPath = '';
   try { currentPath = new URL(robotSource.src).pathname; } catch(e) { currentPath = robotSource.src; }
   if (currentPath === srcMp4) return; // já está rodando, não recarrega
+
   robotSource.src = srcMp4;
   robotVideo.load();
   robotVideo.muted = true;
-  robotVideo.play().catch(function(){});
+
+  // iOS às vezes precisa de um pequeno delay após .load() antes de .play()
+  var playPromise = robotVideo.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(function() {
+      // Segunda tentativa com delay — fallback para iOS Safari
+      setTimeout(function() {
+        robotVideo.muted = true;
+        robotVideo.play().catch(function(){});
+      }, 150);
+    });
+  }
 }
 
 // garante autoplay assim que o usuário interage (desbloqueio iOS)
