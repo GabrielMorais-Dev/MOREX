@@ -511,8 +511,8 @@ body.listening .state-label { color: #6ec9a9;     opacity: 1; }
 </div>
 
 <div class="video-wrap">
-  <video id="robot-face" autoplay muted loop playsinline>
-    <source src="/static/videos/robo-escuta.mp4" type="video/mp4">
+  <video id="robot-face" autoplay muted loop playsinline webkit-playsinline preload="auto">
+    <source id="robot-source" src="/static/videos/robo-escuta.mp4" type="video/mp4">
   </video>
   <span class="state-label" id="state-label">Pronto</span>
 </div>
@@ -604,22 +604,30 @@ const ICON_PAUSE = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14"
 const ICON_PLAY  = '<polygon points="5,3 19,12 5,21"/>';
 
 // ── troca de vídeo compatível com iOS ──
-// iOS exige: trocar <source src>, chamar .load(), depois .play()
-// NUNCA usar video.src = "..." diretamente — quebra no Safari/iOS
-const robotVideo = document.getElementById('robot-face');
-const robotSource = robotVideo ? robotVideo.querySelector('source') : null;
+// iOS resolve src para URL absoluta, então endsWith('/static/...') falha.
+// Solução: comparar só o pathname da URL atual.
+const robotVideo  = document.getElementById('robot-face');
+const robotSource = document.getElementById('robot-source');
 
 function setVideo(srcMp4) {
   if (!robotVideo || !robotSource) return;
-  if (robotSource.src.endsWith(srcMp4)) return; // já está, não recarrega
+  // Pega só o path da src atual (ex: "/static/videos/robo-escuta.mp4")
+  let currentPath = '';
+  try { currentPath = new URL(robotSource.src).pathname; } catch(e) { currentPath = robotSource.src; }
+  if (currentPath === srcMp4) return; // já está rodando, não recarrega
   robotSource.src = srcMp4;
   robotVideo.load();
-  robotVideo.play().catch(() => {});
+  robotVideo.muted = true;
+  robotVideo.play().catch(function(){});
 }
 
 // garante autoplay assim que o usuário interage (desbloqueio iOS)
-document.addEventListener('touchstart', () => {
-  if (robotVideo && robotVideo.paused) robotVideo.play().catch(() => {});
+document.addEventListener('touchstart', function onFirstTouch() {
+  if (robotVideo) {
+    robotVideo.muted = true;
+    robotVideo.play().catch(function(){});
+  }
+  document.removeEventListener('touchstart', onFirstTouch);
 }, { once: true });
 
 speedSlider.addEventListener('input', () => {
