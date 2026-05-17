@@ -79,6 +79,134 @@ body {
   transition: width 0.08s linear;
 }
 
+/* ── BOTÃO FLUTUANTE AXIOM ── */
+.fab-axiom {
+  position: fixed;
+  bottom: 2.2rem;
+  right: 2.2rem;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  background: #052442;
+  border: 1px solid rgba(139,94,52,0.4);
+  padding: 0.85rem 1.5rem 0.85rem 1.1rem;
+  border-radius: 60px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+  box-shadow:
+    0 8px 32px rgba(5,36,66,0.45),
+    0 0 0 0 rgba(139,94,52,0);
+  transition: box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+  overflow: hidden;
+}
+
+/* preenchimento hover */
+.fab-axiom::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0a3a66, #052442);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: inherit;
+}
+
+.fab-axiom:hover { border-color: rgba(139,94,52,0.8); }
+.fab-axiom:hover::before { opacity: 1; }
+
+/* ícone de IA — bolinha pulsante */
+.fab-axiom-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.fab-axiom-icon-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(139,94,52,0.6);
+  animation: fabRingPulse 2.2s ease-in-out infinite;
+}
+
+.fab-axiom-icon-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 10px; height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #8b5e34;
+  box-shadow: 0 0 10px rgba(139,94,52,0.9);
+  animation: fabDotGlow 2.2s ease-in-out infinite;
+}
+
+@keyframes fabRingPulse {
+  0%, 100% { transform: scale(1);   opacity: 0.6; }
+  50%       { transform: scale(1.3); opacity: 0;   }
+}
+
+@keyframes fabDotGlow {
+  0%, 100% { box-shadow: 0 0 8px  rgba(139,94,52,0.7); }
+  50%       { box-shadow: 0 0 18px rgba(139,94,52,1);   }
+}
+
+/* texto */
+.fab-axiom-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.fab-axiom-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(139,94,52,0.75);
+}
+
+.fab-axiom-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: #f0eeea;
+  text-transform: uppercase;
+}
+
+/* seta */
+.fab-axiom-arrow {
+  position: relative;
+  z-index: 1;
+  font-size: 1rem;
+  color: rgba(240,238,234,0.5);
+  transition: transform 0.3s ease, color 0.3s ease;
+  margin-left: 0.2rem;
+}
+
+.fab-axiom:hover .fab-axiom-arrow {
+  transform: translateX(4px);
+  color: #f0eeea;
+}
+
+/* pulso externo periódico */
+@keyframes fabOuterPulse {
+  0%   { box-shadow: 0 8px 32px rgba(5,36,66,0.45), 0 0 0 0   rgba(139,94,52,0.35); }
+  70%  { box-shadow: 0 8px 32px rgba(5,36,66,0.45), 0 0 0 14px rgba(139,94,52,0);   }
+  100% { box-shadow: 0 8px 32px rgba(5,36,66,0.45), 0 0 0 0   rgba(139,94,52,0);   }
+}
+
+.fab-axiom.pulse-active {
+  animation: fabOuterPulse 2.8s ease-out infinite;
+}
+
 /* ── HERO ── */
 #scroll-driver {
   height: 500vh;
@@ -127,6 +255,104 @@ body {
   text-shadow: 0 0 14px rgba(105,26,26,0.781);
   opacity: 0;
   transform: translateY(30px);
+}
+
+/* ── SCROLL HINT ── */
+.scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scroll-hint-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  animation: hintBounce 2s ease-in-out infinite;
+}
+
+.scroll-hint-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: rgba(240,238,234,0.8);
+  text-shadow: 0 0 20px rgba(139,94,52,0.6);
+  animation: hintPulseText 2.4s ease-in-out infinite;
+}
+
+.scroll-hint-mouse {
+  width: 26px;
+  height: 42px;
+  border: 1.5px solid rgba(240,238,234,0.55);
+  border-radius: 13px;
+  position: relative;
+  box-shadow: 0 0 18px rgba(139,94,52,0.3), inset 0 0 10px rgba(139,94,52,0.05);
+}
+
+.scroll-hint-wheel {
+  width: 4px;
+  height: 8px;
+  background: #8b5e34;
+  border-radius: 2px;
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: wheelDrop 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
+  box-shadow: 0 0 8px rgba(139,94,52,1);
+}
+
+.scroll-hint-chevrons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.scroll-hint-chevrons span {
+  display: block;
+  width: 13px;
+  height: 13px;
+  border-right: 1.5px solid rgba(240,238,234,0.8);
+  border-bottom: 1.5px solid rgba(240,238,234,0.8);
+  transform: rotate(45deg);
+  animation: chevronFade 1.6s ease-in-out infinite;
+}
+
+.scroll-hint-chevrons span:nth-child(1) { animation-delay: 0s;   margin-bottom: -5px; }
+.scroll-hint-chevrons span:nth-child(2) { animation-delay: 0.2s; margin-bottom: -5px; }
+.scroll-hint-chevrons span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wheelDrop {
+  0%   { top: 7px;  opacity: 1;   }
+  60%  { top: 22px; opacity: 0;   }
+  61%  { top: 7px;  opacity: 0;   }
+  100% { top: 7px;  opacity: 1;   }
+}
+
+@keyframes chevronFade {
+  0%, 100% { opacity: 0.15; transform: rotate(45deg) translate(-2px, -2px); }
+  50%       { opacity: 1;   transform: rotate(45deg) translate(2px,  2px);  }
+}
+
+@keyframes hintPulseText {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1;    }
+}
+
+@keyframes hintBounce {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(7px); }
 }
 
 #hero-video {
@@ -830,6 +1056,19 @@ footer {
 <!-- Barra de progresso de scroll -->
 <div class="nav-scroll-line" id="scroll-line"></div>
 
+<!-- BOTÃO FLUTUANTE AXIOM -->
+<a href="/axiom" class="fab-axiom" id="fab-axiom">
+  <div class="fab-axiom-icon">
+    <div class="fab-axiom-icon-ring"></div>
+    <div class="fab-axiom-icon-dot"></div>
+  </div>
+  <div class="fab-axiom-text">
+    <span class="fab-axiom-label">Falar com</span>
+    <span class="fab-axiom-name">Axiom</span>
+  </div>
+  <span class="fab-axiom-arrow">→</span>
+</a>
+
 <!-- Menu overlay mobile -->
 <div class="mobile-menu" id="mobile-menu">
   <a href="/axiom" id="mm-link-1">AXIOM.IA</a>
@@ -859,6 +1098,19 @@ footer {
     <div class="hero-center">
       <h1>MOREX</h1>
       <p>Artigo · Inteligência · Precisão</p>
+    </div>
+    <div class="scroll-hint" id="scroll-hint">
+      <div class="scroll-hint-inner">
+        <span class="scroll-hint-label">Descobrir</span>
+        <div class="scroll-hint-mouse">
+          <div class="scroll-hint-wheel"></div>
+        </div>
+        <div class="scroll-hint-chevrons">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1059,6 +1311,27 @@ document.querySelectorAll('a[data-target]').forEach(link => {
 // Nav entrada
 gsap.to('.top-nav', { opacity: 1, duration: 1.8, ease: 'power3.out', delay: 0.4 });
 gsap.from('.nav-links a', { y: -20, opacity: 0, stagger: 0.12, duration: 1.2, ease: 'power3.out', delay: 0.8 });
+
+// ── SCROLL HINT — aparece após 2s e some ao rolar ──
+gsap.to('#scroll-hint', {
+  opacity: 1, duration: 1.2, ease: 'power2.out', delay: 2.2
+});
+
+ScrollTrigger.create({
+  trigger: '#scroll-driver',
+  start: '2% top',
+  onEnter: () => gsap.to('#scroll-hint', { opacity: 0, duration: 0.5, ease: 'power2.in' }),
+  onLeaveBack: () => gsap.to('#scroll-hint', { opacity: 1, duration: 0.6, ease: 'power2.out' })
+});
+
+// ── BOTÃO FLUTUANTE AXIOM ──
+// Aparece após 3s com entrada suave
+gsap.to('#fab-axiom', {
+  opacity: 1, y: 0, scale: 1,
+  duration: 1, ease: 'back.out(1.4)',
+  delay: 3,
+  onComplete: () => document.getElementById('fab-axiom').classList.add('pulse-active')
+});
 
 // ── HAMBURGER MENU ──
 (function () {
