@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: auto; }
+
+body {
+  background: #f0eeea;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  padding: 2rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  opacity: 0;
+}
+
+.nav-logo {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.45em;
+  color: #052442;
+  font-weight: 300;
+}
+
+.nav-links { display: flex; gap: 2.5rem; }
+
+.nav-links a {
+  position: relative;
+  text-decoration: none;
+  color: #052442;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color .4s ease;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -6px;
+  width: 0%; height: 1px;
+  background: #052442;
+  transition: width .4s ease;
+}
+
+.nav-links a:hover { color: #052442; }
+.nav-links a:hover::after { width: 100%; }
+
+/* ── BARRA DE PROGRESSO ── */
+.nav-scroll-line {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(to right, #8b5e34, #052442);
+  z-index: 200;
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
+
+/* ── HERO ── */
+#scroll-driver {
+  height: 500vh;
+  position: relative;
+}
+
+#sticky-wrap {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.hero-center {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.hero-center h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 8vw, 8rem);
+  font-weight: 300;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: #15314d;
+  text-shadow: 0 0 14px rgba(86,16,100,0.781);
+  margin-right: -0.55em;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.hero-center p {
+  margin-top: 1rem;
+  font-family: sans-serif;
+  font-style: italic;
+  font-size: clamp(.8rem, 1.2vw, 1.1rem);
+  letter-spacing: .3em;
+  color: #995b0b;
+  text-shadow: 0 0 14px rgba(105,26,26,0.781);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+#hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+#hero-video.loaded { opacity: 1; }
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse 90% 90% at 50% 50%, transparent 45%, rgba(10,10,10,0.5) 100%);
+}
+
+#sticky-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 25vh;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(240,238,234,0.6) 70%, rgba(240,238,234,1) 100%);
+}
+
+/* ── MANIFESTO ── */
+.manifesto-driver {
+  height: 260vh;
+  position: relative;
+  background: #f0eeea;
+}
+
+.manifesto-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(5,36,66,0.07), transparent 55%),
+    #f0eeea;
+}
+
+.manifesto-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8vw;
+}
+
+.manifesto-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  text-align: center;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #052442;
+  font-size: clamp(2.2rem, 6vw, 7rem);
+  max-width: 1400px;
+  opacity: 0;
+  will-change: opacity, transform, filter;
+}
+
+.line-2 { margin-top: 2rem; }
+
+.manifesto-line span {
+  color: #8b5e34;
+  text-shadow: 0 0 25px rgba(139,94,52,0.15);
+  font-style: italic;
+}
+
+/* ── ARTIGO ── */
+.article-section {
+  background: #f0eeea;
+  padding: 7rem 5vw 8rem;
+  border-top: 1px solid rgba(5,36,66,0.08);
+}
+
+.article-inner {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.article-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 0.68rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #8b5e34;
+  margin-bottom: 2.2rem;
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.article-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  color: #052442;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.article-title em { font-style: italic; color: #8b5e34; }
+
+.article-meta {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(5,36,66,0.35);
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(5,36,66,0.1);
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.article-meta span { color: rgba(139,94,52,0.6); margin: 0 0.6rem; }
+
+.article-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 4rem;
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.article-body p {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 1.08rem;
+  line-height: 1.85;
+  color: rgba(5,36,66,0.72);
+  margin-bottom: 1.4rem;
+}
+
+.article-body p strong { font-weight: 400; color: #052442; }
+
+.article-body p:first-child::first-letter {
+  font-size: 3.8rem;
+  font-weight: 300;
+  line-height: 0.75;
+  float: left;
+  margin-right: 0.12em;
+  margin-top: 0.08em;
+  color: #8b5e34;
+  font-style: italic;
+}
+
+.article-quote {
+  grid-column: 1 / -1;
+  border-left: 2px solid rgba(139,94,52,0.3);
+  padding: 1.2rem 0 1.2rem 2rem;
+  margin: 1rem 0 2rem;
+}
+
+.article-quote p {
+  font-size: 1.25rem !important;
+  font-style: italic;
+  color: #052442 !important;
+  margin-bottom: 0.4rem !important;
+}
+
+.article-quote cite {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(139,94,52,0.6);
+  font-style: normal;
+}
+
+/* ── GRID DE VÍDEOS ── */
+.videos-section {
+  background: #f0eeea;
+  padding: 8rem 5vw 10rem;
+}
+
+.videos-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 0.72rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #8b5e34;
+  margin-bottom: 1rem;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.videos-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  color: #052442;
+  line-height: 1.1;
+  margin-bottom: 5rem;
+  max-width: 560px;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.videos-heading em {
+  font-style: italic;
+  color: #8b5e34;
+}
+
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.video-card {
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: opacity, transform;
+}
+
+.video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 13;
+  overflow: hidden;
+  background: #1c1c1c;
+}
+
+.video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s ease;
+}
+
+.video-card:hover .video-wrap video {
+  transform: scale(1.04);
+}
+
+.video-card-meta {
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(5,36,66,0.12);
+  margin-top: 0.1rem;
+}
+
+.video-card-index {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: #8b5e34;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.video-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  color: #052442;
+  line-height: 1.25;
+  margin-bottom: 0.6rem;
+}
+
+.video-card-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(5,36,66,0.45);
+  line-height: 1.6;
+}
+
+/* ── CTA AXIOM ── */
+.axiom-cta {
+  background: #052442;
+  padding: 10rem 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.axiom-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(240,238,234,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,238,234,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.axiom-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(139,94,52,0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.axiom-cta-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(139,94,52,0.7);
+  margin-bottom: 2rem;
+  opacity: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.axiom-cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(3rem, 8vw, 8rem);
+  line-height: 1.0;
+  letter-spacing: -0.01em;
+  color: #f0eeea;
+  opacity: 0;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 3.5rem;
+}
+
+.axiom-cta-title em {
+  font-style: italic;
+  color: #8b5e34;
+  display: block;
+}
+
+.axiom-cta-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid rgba(240,238,234,0.25);
+  padding: 1.2rem 3rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #f0eeea;
+  cursor: pointer;
+  opacity: 0;
+  transition: border-color 0.4s ease, color 0.4s ease;
+  overflow: hidden;
+}
+
+.axiom-cta-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #8b5e34;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.77,0,0.175,1);
+  z-index: -1;
+}
+
+.axiom-cta-btn:hover { border-color: #8b5e34; }
+.axiom-cta-btn:hover::before { transform: scaleX(1); }
+
+.axiom-cta-btn-arrow {
+  display: inline-block;
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.axiom-cta-btn:hover .axiom-cta-btn-arrow { transform: translateX(6px); }
+
+/* ── RODAPÉ ── */
+footer {
+  background: #052442;
+  padding: 4rem 5vw 2.5rem;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 2rem;
+}
+
+.footer-brand {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.5em;
+  color: rgba(240,238,234,0.5);
+  font-weight: 300;
+}
+
+.footer-edu-badge {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(240,238,234,0.28);
+  border: 1px solid rgba(240,238,234,0.12);
+  padding: 0.4rem 1rem;
+  margin-top: 0.6rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 3rem;
+}
+
+.footer-links a {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(240,238,234,0.35);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover { color: rgba(240,238,234,0.7); }
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-disclaimer {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: rgba(240,238,234,0.22);
+  max-width: 640px;
+  font-style: italic;
+}
+
+.footer-disclaimer strong {
+  font-style: normal;
+  font-weight: 400;
+  color: rgba(240,238,234,0.38);
+}
+
+.footer-copy {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240,238,234,0.18);
+  white-space: nowrap;
+}
+
+/* ── HAMBÚRGUER ── */
+.nav-hamburger { display: none; }
+
+/* ── MENU MOBILE OVERLAY ── */
+.mobile-menu { display: none; }
+
+/* ── MEDIA QUERIES ── */
+@media (max-width: 768px) {
+
+  /* Nav */
+  .top-nav {
+    padding: 1.2rem 1.4rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .nav-links a {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+  }
+
+  /* Hero */
+  .hero-center h1 {
+    font-size: clamp(2.4rem, 14vw, 4rem);
+    letter-spacing: 0.3em;
+  }
+
+  .hero-center p {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+  }
+
+  /* Manifesto */
+  .manifesto-wrap {
+    padding: 0 5vw;
+  }
+
+  .manifesto-line {
+    font-size: clamp(1.7rem, 8vw, 3.5rem);
+  }
+
+  .line-2 { margin-top: 1.2rem; }
+
+  /* Artigo */
+  .article-section {
+    padding: 4rem 1.4rem 5rem;
+  }
+
+  .article-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .article-quote {
+    grid-column: 1 / -1;
+  }
+
+  /* Vídeos */
+  .videos-section {
+    padding: 5rem 1.4rem 6rem;
+  }
+
+  .videos-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .video-wrap {
+    aspect-ratio: 4 / 5;
+  }
+
+  .videos-heading {
+    margin-bottom: 3rem;
+  }
+
+  /* CTA */
+  .axiom-cta {
+    padding: 6rem 1.4rem;
+  }
+
+  .axiom-cta-title {
+    font-size: clamp(2.4rem, 12vw, 5rem);
+  }
+
+  .axiom-cta-btn {
+    padding: 1rem 2rem;
+    font-size: 0.72rem;
+  }
+
+  /* Footer */
+  .footer-top {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 1.2rem 2rem;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
+
+  .footer-copy {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 420px) {
+  .top-nav {
+    padding: 1rem 1.1rem;
+  }
+
+  .nav-logo {
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+  }
+
+  .article-section {
+    padding: 3rem 1.1rem 4rem;
+  }
+
+  .videos-section {
+    padding: 4rem 1.1rem 5rem;
+  }
+
+  .axiom-cta {
+    padding: 5rem 1.1rem;
+  }
+
+  footer {
+    padding: 3rem 1.1rem 2rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Barra de progresso de scroll -->
+<div class="nav-scroll-line" id="scroll-line"></div>
+
+<nav class="top-nav">
+  <div class="nav-logo">MOREX</div>
+  <div class="nav-links">
+    <a href="/axiom">AXIOM.IA</a>
+    <a href="#" data-target="perspectiva-section">Perspectiva</a>
+    <a href="#" data-target="aplicacoes-section">Aplicações</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="scroll-driver">
+  <div id="sticky-wrap">
+    <video id="hero-video" muted playsinline preload="auto">
+      <source src="/static/videos/robo.mp4" type="video/mp4">
+      <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+    </video>
+    <div class="vignette"></div>
+    <div class="hero-center">
+      <h1>MOREX</h1>
+      <p>Artigo · Inteligência · Precisão</p>
+    </div>
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<div class="manifesto-driver" id="manifesto-driver">
+  <div class="manifesto-sticky">
+    <div class="manifesto-wrap">
+      <p class="manifesto-line line-1">
+        A inteligência artificial
+        <span>não substitui</span>
+        o humano.
+      </p>
+      <p class="manifesto-line line-2">
+        Ela amplia
+        <span>precisão</span>,
+        <span>percepção</span>
+        e
+        <span>capacidade</span>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ARTIGO — âncora: Perspectiva -->
+<article class="article-section" id="perspectiva-section">
+  <div class="article-inner">
+    <p class="article-label">Perspectiva</p>
+    <h2 class="article-title">A <em>convergência</em> entre<br>robótica e inteligência artificial</h2>
+    <p class="article-meta">
+      Por Gabriel Morais
+      <span>·</span>
+      Morex
+      <span>·</span>
+      Publicado para fins educacionais
+    </p>
+    <div class="article-body">
+      <p>
+        Vivemos um momento singular na história da tecnologia. A robótica, disciplina nascida da engenharia mecânica e da eletrônica, passou décadas confinada a ambientes controlados — linhas de montagem, laboratórios, câmaras estéreis. Hoje, impulsionada por algoritmos de aprendizado profundo e capacidade computacional sem precedentes, ela começa a transitar com desenvoltura pelo mundo desordenado e imprevisível que os humanos habitam.
+      </p>
+      <p>
+        Essa transição não é trivial. <strong>Um robô industrial tradicional</strong> opera sobre instruções fixas, repetindo com precisão milimétrica um conjunto limitado de movimentos. Um robô cognitivo, por outro lado, precisa interpretar sensores, antecipar variações e tomar decisões em frações de segundo — competências que antes eram exclusividade biológica.
+      </p>
+      <div class="article-quote">
+        <p>"A inteligência artificial não torna o ser humano obsoleto. Ela libera o humano para aquilo que só o humano pode fazer: criar, sentir, decidir com propósito."</p>
+        <cite>Gabriel Morais — Morex</cite>
+      </div>
+      <p>
+        O que a inteligência artificial trouxe de transformador foi a capacidade de <strong>generalização</strong>. Modelos treinados em milhões de exemplos conseguem reconhecer padrões em situações nunca vistas, adaptando comportamentos sem reprogramação explícita. Aplicada à robótica, essa característica permite que um mesmo sistema opere em contextos distintos — da logística hospitalar à inspeção de infraestrutura — com mínima intervenção humana.
+      </p>
+      <p>
+        Naturalmente, esse avanço levanta questões éticas e regulatórias legítimas. <strong>Responsabilidade civil</strong>, privacidade de dados coletados por sensores, impacto no mercado de trabalho e segurança operacional são temas que exigem debate amplo, multidisciplinar e, sobretudo, informado. Este projeto nasce justamente com esse propósito: oferecer uma perspectiva técnica e reflexiva sobre um campo que moldará as próximas décadas.
+      </p>
+    </div>
+  </div>
+</article>
+
+<!-- GRID DE VÍDEOS — âncora: Aplicações -->
+<section class="videos-section" id="aplicacoes-section">
+
+  <p class="videos-label">Aplicações</p>
+  <h2 class="videos-heading">Onde a <em>máquina</em><br>encontra o mundo real.</h2>
+
+  <div class="videos-grid">
+
+    <div class="video-card" data-delay="0">
+      <div class="video-wrap">
+        <video src="/static/videos/manufatura.mp4" muted loop playsinline
+          onmouseenter="this.play()" onmouseleave="this.pause(); this.currentTime=0;">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-card-meta">
+        <p class="video-card-index">01</p>
+        <p class="video-card-title">Manufatura Autônoma</p>
+        <p class="video-card-desc">Braços robóticos operam linhas de montagem com precisão de 0,01 mm, sem interrupções.</p>
+      </div>
+    </div>
+
+    <div class="video-card" data-delay="0.15">
+      <div class="video-wrap">
+        <video src="/static/videos/visao.mp4" muted loop playsinline
+          onmouseenter="this.play()" onmouseleave="this.pause(); this.currentTime=0;">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-card-meta">
+        <p class="video-card-index">02</p>
+        <p class="video-card-title">Inspeção de Alta Precisão</p>
+        <p class="video-card-desc">Visão computacional detecta falhas invisíveis ao olho humano em tempo real.</p>
+      </div>
+    </div>
+
+    <div class="video-card" data-delay="0.3">
+      <div class="video-wrap">
+        <video src="/static/videos/sistema.mp4" muted loop playsinline
+          onmouseenter="this.play()" onmouseleave="this.pause(); this.currentTime=0;">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-card-meta">
+        <p class="video-card-index">03</p>
+        <p class="video-card-title">Logística Inteligente</p>
+        <p class="video-card-desc">Sistemas autônomos mapeiam, transportam e reorganizam ambientes dinâmicos.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA AXIOM -->
+<section class="axiom-cta" id="axiom-cta">
+  <p class="axiom-cta-label">Inteligência Artificial</p>
+  <h2 class="axiom-cta-title">
+    Conversar com
+    <em>Axiom</em>
+  </h2>
+  <a href="/axiom" class="axiom-cta-btn">
+    Iniciar conversa
+    <span class="axiom-cta-btn-arrow">→</span>
+  </a>
+</section>
+
+<footer id="contato-section">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">MOREX</div>
+        <div class="footer-edu-badge">Projeto Educacional</div>
+      </div>
+      <div class="footer-links">
+        <a href="/axiom">Axiom IA</a>
+        <a href="#" data-target="perspectiva-section">Perspectiva</a>
+        <a href="#" data-target="aplicacoes-section">Aplicações</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-disclaimer">
+        <strong>Aviso legal:</strong> Este website foi desenvolvido exclusivamente para fins educacionais e de pesquisa acadêmica, no âmbito de estudos sobre robótica, inteligência artificial e interfaces digitais. Todo o conteúdo apresentado — textos, vídeos, simulações e demonstrações — é de caráter ilustrativo e não representa oferta de produtos, serviços ou soluções comerciais. As informações aqui contidas não devem ser interpretadas como aconselhamento técnico, jurídico ou empresarial. Os direitos sobre o conteúdo autoral pertencem a <strong>Gabriel Morais</strong>, sendo vedada a reprodução sem autorização expressa. Em conformidade com a Lei n.º 9.610/1998 (Lei de Direitos Autorais) e a Lei n.º 13.709/2018 (LGPD).
+      </p>
+      <p class="footer-copy">© 2025 Gabriel Morais — MOREX</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ── BARRA DE PROGRESSO DE SCROLL ──
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('scroll-line').style.width = pct + '%';
+}, { passive: true });
+
+// ── SMOOTH SCROLL COM EASING ──
+function smoothScrollTo(targetY, duration) {
+  const startY = window.scrollY;
+  const distance = targetY - startY;
+  let startTime = null;
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+document.querySelectorAll('a[data-target]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const id = link.getAttribute('data-target');
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    gsap.fromTo(link,
+      { color: '#8b5e34' },
+      { color: '#052442', duration: 0.9, ease: 'power2.out' }
+    );
+
+    const top = target.getBoundingClientRect().top + window.scrollY - 80;
+    smoothScrollTo(top, 1100);
+  });
+});
+
+// Nav entrada
+gsap.to('.top-nav', { opacity: 1, duration: 1.8, ease: 'power3.out', delay: 0.4 });
+gsap.from('.nav-links a', { y: -20, opacity: 0, stagger: 0.12, duration: 1.2, ease: 'power3.out', delay: 0.8 });
+
+// ── HERO ──
+(function () {
+  const video = document.getElementById('hero-video');
+  let inited = false;
+
+  function initScroll() {
+    if (inited) return;
+    inited = true;
+    video.classList.add('loaded');
+    const dur = video.duration || 10;
+
+    ScrollTrigger.create({
+      trigger: '#scroll-driver',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.2,
+      onUpdate(self) { video.currentTime = self.progress * dur; }
+    });
+
+    const pctStartMenu   = (0.5 / dur) * 100;
+    const pctEndMenu     = (8.0 / dur) * 100;
+    const pctStartTitulo = (6.0 / dur) * 100;
+    const pctEndTitulo   = (7.5 / dur) * 100;
+
+    gsap.fromTo('.nav-links a',
+      { x: '-60vw', y: '80px', opacity: 0, scale: 0.7, rotation: -8 },
+      { x: '0vw', y: '0px', opacity: 1, scale: 1, rotation: 0,
+        ease: 'power1.out', stagger: 0.03,
+        scrollTrigger: { trigger: '#scroll-driver',
+          start: `${pctStartMenu}% top`, end: `${pctEndMenu}% top`, scrub: 2.0 } }
+    );
+
+    gsap.fromTo('.hero-center h1, .hero-center p',
+      { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, stagger: 0.2, ease: 'power2.out',
+        scrollTrigger: { trigger: '#scroll-driver',
+          start: `${pctStartTitulo}% top`, end: `${pctEndTitulo}% top`, scrub: 1.2 } }
+    );
+
+    gsap.to('.hero-center', {
+      opacity: 0, ease: 'power2.in',
+      scrollTrigger: { trigger: '#scroll-driver',
+        start: '90% top', end: '100% top', scrub: 1 }
+    });
+  }
+
+  video.addEventListener('loadedmetadata', initScroll);
+  video.addEventListener('canplay', () => { if (video.readyState >= 2) initScroll(); });
+  if (video.readyState >= 1) initScroll();
+  setTimeout(() => { if (!inited) initScroll(); }, 3000);
+})();
+
+// ── MANIFESTO ──
+gsap.timeline({
+  scrollTrigger: {
+    trigger: '#manifesto-driver',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 2
+  }
+})
+.fromTo('.line-1',
+  { opacity: 0, y: 60, filter: 'blur(14px)' },
+  { opacity: 1, y: 0,  filter: 'blur(0px)', ease: 'none', duration: 3 }, 0
+)
+.fromTo('.line-2',
+  { opacity: 0, y: 60, filter: 'blur(14px)' },
+  { opacity: 1, y: 0,  filter: 'blur(0px)', ease: 'none', duration: 3 }, 1
+)
+.to(['.line-1', '.line-2'], { opacity: 1, duration: 4 }, 4)
+.to(['.line-1', '.line-2'],
+  { opacity: 0, y: -50, filter: 'blur(12px)', ease: 'none', duration: 3 }, 8
+);
+
+// ── ARTIGO ──
+gsap.timeline({
+  scrollTrigger: {
+    trigger: '.article-section',
+    start: 'top 72%',
+    end: '+=600',
+    scrub: 2.2
+  }
+})
+.to('.article-label',  { opacity: 1, y: 0, ease: 'none', duration: 1 }, 0)
+.to('.article-title',  { opacity: 1, y: 0, ease: 'none', duration: 1.2 }, 0.4)
+.to('.article-meta',   { opacity: 1, y: 0, ease: 'none', duration: 1 }, 0.9)
+.to('.article-body',   { opacity: 1, y: 0, ease: 'none', duration: 1.5 }, 1.4);
+
+// ── GRID DE VÍDEOS ──
+// Os cards agora entram assim que a seção fica visível,
+// sem precisar rolar a tela inteira. Scrub menor + end curto
+// = animação completa em poucos pixels de scroll.
+
+gsap.set('.videos-label',   { opacity: 0, y: 16 });
+gsap.set('.videos-heading',  { opacity: 0, y: 20 });
+gsap.set('.video-card',      { opacity: 0, y: 40 });
+gsap.set('.video-card video', { clipPath: 'inset(100% 0% 0% 0%)' });
+gsap.set('.video-card .video-card-meta', { opacity: 0 });
+
+gsap.timeline({
+  scrollTrigger: {
+    trigger: '.videos-section',
+    start: 'top 70%',   // dispara quando a seção entra 70% da viewport
+    end: '+=320',       // conclui em apenas 320px de scroll (era 1100px)
+    scrub: 1.2          // menos inércia = resposta mais rápida (era 2.8)
+  }
+})
+// label e heading entram quase juntos
+.to('.videos-label',   { opacity: 1, y: 0, ease: 'none', duration: 0.8 }, 0)
+.to('.videos-heading',  { opacity: 1, y: 0, ease: 'none', duration: 0.9 }, 0.2)
+
+// os 3 cards entram com uma sobreposição mínima entre si
+.to('.video-card:nth-child(1)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 0.7)
+.to('.video-card:nth-child(1) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 0.7)
+.to('.video-card:nth-child(1) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.2)
+
+.to('.video-card:nth-child(2)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.0)
+.to('.video-card:nth-child(2) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 1.0)
+.to('.video-card:nth-child(2) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.5)
+
+.to('.video-card:nth-child(3)',        { opacity: 1, y: 0, ease: 'none', duration: 1 }, 1.3)
+.to('.video-card:nth-child(3) video',  { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', duration: 1.1 }, 1.3)
+.to('.video-card:nth-child(3) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.8);
+
+// ── CTA AXIOM ──
+gsap.set('.axiom-cta-label', { opacity: 0, y: 30 });
+gsap.set('.axiom-cta-title', { opacity: 0, y: 60 });
+gsap.set('.axiom-cta-btn',   { opacity: 0, y: 30 });
+
+gsap.timeline({
+  scrollTrigger: {
+    trigger: '.axiom-cta',
+    start: 'top 75%',
+    toggleActions: 'play none none none'
+  }
+})
+.to('.axiom-cta-label', {
+  opacity: 1, y: 0, duration: 0.8, ease: 'power3.out'
+})
+.to('.axiom-cta-title', {
+  opacity: 1, y: 0, duration: 1.2, ease: 'power3.out'
+}, '-=0.4')
+.to('.axiom-cta-btn', {
+  opacity: 1, y: 0, duration: 0.9, ease: 'power3.out'
+}, '-=0.5');
+
+// pulso de atenção no botão após entrada
+ScrollTrigger.create({
+  trigger: '.axiom-cta',
+  start: 'top 75%',
+  onEnter: () => {
+    gsap.to('.axiom-cta-btn', {
+      boxShadow: '0 0 0 8px rgba(139,94,52,0.12)',
+      repeat: -1,
+      yoyo: true,
+      duration: 1.5,
+      ease: 'sine.inOut',
+      delay: 1.5
+    });
+  }
+});
+</script>
+</body>
+</html>
