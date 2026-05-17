@@ -698,6 +698,21 @@ function setState(state) {
   }
 }
 
+function scrollBottom() {
+  messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+}
+
+// Scroll contínuo: repete por 600ms após adicionar mensagem,
+// garantindo que acompanha a animação de entrada e o teclado mobile.
+function scrollForDuration(ms) {
+  var end = Date.now() + ms;
+  function step() {
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'instant' });
+    if (Date.now() < end) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function addMessage(role, text) {
   const div = document.createElement('div');
   div.className = `msg ${role}`;
@@ -706,13 +721,13 @@ function addMessage(role, text) {
     <span class="msg-text">${text}</span>
   `;
   messagesEl.appendChild(div);
-  messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+  scrollForDuration(600);
   return div;
 }
 
 function setTyping(on) {
   typingEl.classList.toggle('visible', on);
-  if (on) messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+  if (on) scrollForDuration(400);
 }
 
 function setWave(on) {
