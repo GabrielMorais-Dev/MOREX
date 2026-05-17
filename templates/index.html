@@ -871,7 +871,7 @@ footer {
 
     <div class="video-card" data-delay="0">
       <div class="video-wrap">
-        <video muted loop playsinline autoplay preload="metadata">
+        <video muted loop playsinline autoplay preload="auto" webkit-playsinline x5-playsinline>
           <source src="/static/videos/manufatura.mp4" type="video/mp4">
           <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4">
         </video>
@@ -885,7 +885,7 @@ footer {
 
     <div class="video-card" data-delay="0.15">
       <div class="video-wrap">
-        <video muted loop playsinline autoplay preload="metadata">
+        <video muted loop playsinline autoplay preload="auto" webkit-playsinline x5-playsinline>
           <source src="/static/videos/visao.mp4" type="video/mp4">
           <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">
         </video>
@@ -899,7 +899,7 @@ footer {
 
     <div class="video-card" data-delay="0.3">
       <div class="video-wrap">
-        <video muted loop playsinline autoplay preload="metadata">
+        <video muted loop playsinline autoplay preload="auto" webkit-playsinline x5-playsinline>
           <source src="/static/videos/sistema.mp4" type="video/mp4">
           <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
         </video>
@@ -1121,37 +1121,46 @@ if (!isMobile) {
   .to('.video-card:nth-child(3) .video-card-meta', { opacity: 1, ease: 'none', duration: 0.7 }, 1.8);
 }
 
-// ── FIX MOBILE: IntersectionObserver garante play() no iOS/Android ──
-// Necessário porque iOS bloqueia autoplay quando opacity:0 via JS
-// e Android Chrome exige interseção visível para iniciar vídeo
+// ── FIX iOS Safari: forçar play em todos os vídeos ──
 (function () {
   const videos = document.querySelectorAll('.video-wrap video');
 
-  // Tenta dar play imediato (funciona em Android e alguns iOS)
-  videos.forEach(v => {
+  function tryPlay(v) {
     v.muted = true;
-    v.playsInline = true;
-    const p = v.play();
-    if (p !== undefined) p.catch(() => {});
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    if (v.paused) {
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(function(){});
+    }
+  }
+
+  // Tenta de imediato
+  videos.forEach(tryPlay);
+
+  // Tenta novamente após carregamento da página
+  window.addEventListener('load', function () {
+    videos.forEach(tryPlay);
   });
 
-  // IntersectionObserver: dispara play quando o vídeo entra na viewport
+  // IntersectionObserver: dispara play ao entrar na tela
   if ('IntersectionObserver' in window) {
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const vid = entry.target;
-        if (entry.isIntersecting) {
-          vid.muted = true;
-          const p = vid.play();
-          if (p !== undefined) p.catch(() => {});
-        } else {
-          vid.pause();
-        }
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) tryPlay(entry.target);
+        else entry.target.pause();
       });
-    }, { threshold: 0.25 });
+    }, { threshold: 0.1 });
 
-    videos.forEach(v => obs.observe(v));
+    videos.forEach(function(v) { obs.observe(v); });
   }
+
+  // iOS: no primeiro toque do usuário, força play em todos
+  document.addEventListener('touchstart', function onFirstTouch() {
+    videos.forEach(tryPlay);
+    document.removeEventListener('touchstart', onFirstTouch);
+  }, { once: true });
 })();
 
 // ── CTA AXIOM ──
